@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_file, render_template
+import json
 import qrcode
 from io import BytesIO
 import base64
@@ -27,11 +28,9 @@ def generate_qr():
     
     try:
         # Check if the request comes from form (Content-Type: application/x-www-form-urlencoded)
-        if request.content_type == 'application/x-www-form-urlencoded':
-            data = json.loads(request.form.get('requestData', '{}'))
-        else:
+    
             # Regular JSON request
-            data = request.json
+        data = request.json
         # Get data from request
         logger.debug(f"Received QR generation request with style: {data.get('style')}")
         
@@ -211,8 +210,11 @@ def download_qr():
         return jsonify(success=True)
     
     try:
-        # This route provides a downloadable file
-        data = request.json
+        if request.content_type == 'application/x-www-form-urlencoded':
+            data = json.loads(request.form.get('requestData', '{}'))
+        else:
+            data = request.json
+        # This route provides a downloadable fil
         
         qr_data = data.get('data', '')
         qr_size = int(data.get('size', 300))
