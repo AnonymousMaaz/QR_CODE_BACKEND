@@ -530,8 +530,8 @@
     // Test if the server is running
     const testServerConnection = async () => {
         try {
-            const response = await fetch(serverUrl, {
-                method: 'GET',
+            const response = await fetch(`${serverUrl}/generate-qr`, {
+                method: 'OPTIONS',
                 mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json'
@@ -662,7 +662,7 @@
                     requestData.logo = logoData;
                 }
                 
-                const response = await fetch(serverUrl, {
+                const response = await fetch(`${serverUrl}/generate-qr`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -681,67 +681,114 @@
                     qrCodeImg.src = result.image;
                     
                     // Set up download event for PNG
-                    downloadLink.onclick = async function(e) {
-                        e.preventDefault();
-                        
-                        try {
-                            const response = await fetch(`${serverUrl}/download-qr`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(requestData)
-                            });
-                            
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = 'beautiful_qrcode.png';
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                        } catch (error) {
-                            console.error('Error downloading QR code:', error);
-                            errorMessage.textContent = 'Error downloading QR code. Please try again.';
-                            errorMessage.style.display = 'block';
-                        }
-                    };
+                   downloadLink.onclick = function(e) {
+    if (!useExternalApiCheckbox.checked) {
+        e.preventDefault();
+        
+        // Get current form values again to ensure they're up to date
+        const data = document.getElementById('qrData').value;
+        const size = document.getElementById('qrSize').value;
+        const color = document.getElementById('qrColor').value.substring(1);
+        const bgColor = document.getElementById('qrBgColor').value.substring(1);
+        
+        const requestData = {
+            data: data,
+            size: size,
+            color: color,
+            bgColor: bgColor,
+            style: selectedStyle
+        };
+        
+        // Add logo if present
+        if (logoData) {
+            requestData.logo = logoData;
+        }
+        
+        // Use fetch to get the file and create a download
+        fetch(`${serverUrl}/download-qr`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'beautiful_qrcode.png';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error('Download error:', error);
+            errorMessage.textContent = 'Error downloading QR code. Please try again.';
+            errorMessage.style.display = 'block';
+        });
+        
+        return false;
+    }
+};
                     
                     // Set up download event for SVG (if supported by server)
-                    downloadSvgLink.onclick = async function(e) {
-                        e.preventDefault();
-                        
-                        try {
-                            // Add format parameter for SVG
-                            const svgRequestData = {...requestData, format: 'svg'};
-                            
-                            const response = await fetch(`${serverUrl}/download-qr`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(svgRequestData)
-                            });
-                            
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = 'beautiful_qrcode.svg';
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                        } catch (error) {
-                            console.error('Error downloading SVG QR code:', error);
-                            errorMessage.textContent = 'SVG format may not be supported. Please try PNG download.';
-                            errorMessage.style.display = 'block';
-                        }
-                    };
+                   // For SVG download
+downloadSvgLink.onclick = function(e) {
+    if (!useExternalApiCheckbox.checked) {
+        e.preventDefault();
+        
+        // Get current form values again
+        const data = document.getElementById('qrData').value;
+        const size = document.getElementById('qrSize').value;
+        const color = document.getElementById('qrColor').value.substring(1);
+        const bgColor = document.getElementById('qrBgColor').value.substring(1);
+        
+        const requestData = {
+            data: data,
+            size: size,
+            color: color,
+            bgColor: bgColor,
+            style: selectedStyle,
+            format: 'svg'
+        };
+        
+        // Add logo if present
+        if (logoData) {
+            requestData.logo = logoData;
+        }
+        
+        // Use fetch to get the file and create a download
+        fetch(`${serverUrl}/download-qr`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'beautiful_qrcode.svg';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error('Download error:', error);
+            errorMessage.textContent = 'Error downloading QR code. Please try again.';
+            errorMessage.style.display = 'block';
+        });
+        
+        return false;
+    }
+};
                     
                     // Hide loader and show result
                     loader.style.display = 'none';
