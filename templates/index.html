@@ -4,8 +4,372 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
-    <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #a5b4fc;
+            --text-color: #1f2937;
+            --light-color: #f9fafb;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .qr-form-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.2);
+        }
+        
+        .result-container {
+            display: none;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        
+        .qr-code {
+            border: 1px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            max-width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .qr-code:hover {
+            transform: scale(1.02);
+        }
+        
+        .download-btn-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .download-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .settings {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .settings .form-group {
+            flex: 1;
+            min-width: 120px;
+            margin-bottom: 0;
+        }
+        
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 1rem auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6b7280;
+        }
+        
+        .error-message {
+            color: #dc2626;
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .api-toggle {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        
+        .api-toggle label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .api-toggle input {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .style-options {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .style-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .qr-styles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .qr-style-option {
+            flex: 1;
+            min-width: 100px;
+            max-width: 160px;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .qr-style-option:hover {
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .qr-style-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+        
+        .qr-style-option img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 0.5rem;
+        }
+        
+        .qr-style-option .style-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .logo-upload {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .logo-preview {
+            width: 60px;
+            height: 60px;
+            border: 1px dashed #d1d5db;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+        
+        .logo-upload-btn {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 1rem;
+        }
+        
+        .logo-upload-btn:hover {
+            background-color: #e5e7eb;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .remove-logo {
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+            display: none;
+        }
+        
+        .remove-logo:hover {
+            text-decoration: underline;
+            background: none;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .qr-form-container, .result-container {
+                padding: 1.5rem;
+            }
+            
+            .qr-styles {
+                gap: 0.5rem;
+            }
+            
+            .qr-style-option {
+                min-width: 80px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .settings {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .settings .form-group {
+                width: 100%;
+            }
+            
+            .download-btn-container {
+                flex-direction: column;
+            }
+        }
+</style>
 </head>
 <body>
     <div class="container">
@@ -107,6 +471,317 @@
             <p>&copy; 2025 Beautiful QR Code Generator - Created with ❤️</p>
         </footer>
     </div>
-    <script src="./script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('qrForm');
+    const loader = document.getElementById('loader');
+    const resultContainer = document.getElementById('resultContainer');
+    const qrCodeImg = document.getElementById('qrCodeImg');
+    const downloadLink = document.getElementById('downloadLink');
+    const downloadSvgLink = document.getElementById('downloadSvgLink');
+    const errorMessage = document.getElementById('errorMessage');
+    const useExternalApiCheckbox = document.getElementById('useExternalApi');
+    const logoUpload = document.getElementById('logoUpload');
+    const logoUploadBtn = document.getElementById('logoUploadBtn');
+    const logoPreview = document.getElementById('logoPreview');
+    const removeLogoBtn = document.getElementById('removeLogoBtn');
+    const serverUrl = 'https://qr-code-generator-backend.onrender.com';
+    
+    let selectedStyle = 'standard';
+    let logoData = null;
+    // Style selection
+    const styleOptions = document.querySelectorAll('.qr-style-option');
+    styleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            styleOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedStyle = this.getAttribute('data-style');
+        });
+    });
+    
+    // Logo upload handling
+    logoUploadBtn.addEventListener('click', function() {
+        logoUpload.click();
+    });
+    
+    logoUpload.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                logoData = event.target.result;
+                logoPreview.src = logoData;
+                logoPreview.style.display = 'block';
+                removeLogoBtn.style.display = 'block';
+            };
+            
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+    
+    removeLogoBtn.addEventListener('click', function() {
+        logoData = null;
+        logoPreview.src = '';
+        logoPreview.style.display = 'none';
+        logoUpload.value = '';
+        removeLogoBtn.style.display = 'none';
+    });
+    
+    // Test if the server is running
+    const testServerConnection = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/', {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            
+            if (response.ok) {
+                console.log('Server is running');
+                return true;
+            } else {
+                console.log('Server returned an error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Server connection error:', error);
+            return false;
+        }
+    };
+    
+    // Check server connection on page load
+    testServerConnection().then(isConnected => {
+        if (!isConnected) {
+            errorMessage.textContent = 'Unable to connect to the local server. Check if it\'s running or use the public API option.';
+            errorMessage.style.display = 'block';
+            useExternalApiCheckbox.checked = true;
+        }
+    });
+    
+    // Function to apply QR style based on selection
+    const applyQrStyle = (baseUrl, params) => {
+        // Base parameters for all styles
+        const baseParams = new URLSearchParams(params);
+        
+        switch (selectedStyle) {
+            case 'rounded':
+                baseParams.append('format', 'svg');
+                baseParams.append('qzone', '1');
+                baseParams.append('format', 'svg');
+                // For rounded corners, we'd use SVG for more control
+                return `${baseUrl}?${baseParams.toString()}`;
+                
+            case 'dot':
+                baseParams.append('format', 'svg');
+                baseParams.append('qzone', '2');
+                // For dot style, we'd ideally use a specialized API or custom rendering
+                return `${baseUrl}?${baseParams.toString()}`;
+                
+            case 'custom':
+                baseParams.append('format', 'svg');
+                baseParams.append('qzone', '1');
+                // Custom style with more gradients or patterns
+                return `${baseUrl}?${baseParams.toString()}`;
+                
+            case 'standard':
+            default:
+                return `${baseUrl}?${baseParams.toString()}`;
+        }
+    };
+    
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form values
+        const data = document.getElementById('qrData').value;
+        const size = document.getElementById('qrSize').value;
+        const color = document.getElementById('qrColor').value.substring(1); // Remove #
+        const bgColor = document.getElementById('qrBgColor').value.substring(1); // Remove #
+        
+        // Hide any previous error messages
+        errorMessage.style.display = 'none';
+        
+        // Show loader
+        loader.style.display = 'block';
+        resultContainer.style.display = 'none';
+        
+        // Check if using external API
+        const useExternalApi = useExternalApiCheckbox.checked;
+        
+        if (useExternalApi) {
+            // Use external QR code API with style parameters
+            const baseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+            const params = {
+                data: encodeURIComponent(data),
+                size: `${size}x${size}`,
+                color: color,
+                bgcolor: bgColor
+            };
+            
+            const qrUrl = applyQrStyle(baseUrl, params);
+            
+            qrCodeImg.onload = function() {
+                loader.style.display = 'none';
+                resultContainer.style.display = 'block';
+            };
+            
+            qrCodeImg.onerror = function() {
+                loader.style.display = 'none';
+                errorMessage.textContent = 'Error generating QR code with external API. Please try again.';
+                errorMessage.style.display = 'block';
+            };
+            
+            // Update the QR code image
+            qrCodeImg.src = qrUrl;
+            
+            // Set download links
+            downloadLink.href = qrUrl;
+            downloadLink.setAttribute('download', 'beautiful_qrcode.png');
+            
+            // For SVG download (if style supports it)
+            const svgUrl = `${baseUrl}?${new URLSearchParams({...params, format: 'svg'}).toString()}`;
+            downloadSvgLink.href = svgUrl;
+            downloadSvgLink.setAttribute('download', 'beautiful_qrcode.svg');
+            
+        } else {
+            // Use local server API with extended parameters for styles
+            try {
+                const requestData = {
+                    data: data,
+                    size: size,
+                    color: color,
+                    bgColor: bgColor,
+                    style: selectedStyle
+                };
+                
+                // Add logo if present
+                if (logoData) {
+                    requestData.logo = logoData;
+                }
+                
+                const response = await fetch(serverUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server returned an error');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update the QR code image with the base64 data
+                    qrCodeImg.src = result.image;
+                    
+                    // Set up download event for PNG
+                    downloadLink.onclick = async function(e) {
+                        e.preventDefault();
+                        
+                        try {
+                            const response = await fetch(serverUrl+'download-qr', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(requestData)
+                            });
+                            
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = 'beautiful_qrcode.png';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        } catch (error) {
+                            console.error('Error downloading QR code:', error);
+                            errorMessage.textContent = 'Error downloading QR code. Please try again.';
+                            errorMessage.style.display = 'block';
+                        }
+                    };
+                    
+                    // Set up download event for SVG (if supported by server)
+                    downloadSvgLink.onclick = async function(e) {
+                        e.preventDefault();
+                        
+                        try {
+                            // Add format parameter for SVG
+                            const svgRequestData = {...requestData, format: 'svg'};
+                            
+                            const response = await fetch(serverUrl+'/download-qr', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(svgRequestData)
+                            });
+                            
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = 'beautiful_qrcode.svg';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        } catch (error) {
+                            console.error('Error downloading SVG QR code:', error);
+                            errorMessage.textContent = 'SVG format may not be supported. Please try PNG download.';
+                            errorMessage.style.display = 'block';
+                        }
+                    };
+                    
+                    // Hide loader and show result
+                    loader.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                } else {
+                    throw new Error('Server returned unsuccessful response');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loader.style.display = 'none';
+                errorMessage.textContent = 'Error connecting to server. Please try the public API option or check if the server is running.';
+                errorMessage.style.display = 'block';
+                useExternalApiCheckbox.checked = true;
+                
+                // Fall back to external API
+                const baseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+                const params = {
+                    data: encodeURIComponent(data),
+                    size: `${size}x${size}`,
+                    color: color,
+                    bgcolor: bgColor
+                };
+                
+                const qrUrl = applyQrStyle(baseUrl, params);
+                qrCodeImg.src = qrUrl;
+                downloadLink.href = qrUrl;
+                downloadLink.setAttribute('download', 'beautiful_qrcode.png');
+                
+                const svgUrl = `${baseUrl}?${new URLSearchParams({...params, format: 'svg'}).toString()}`;
+                downloadSvgLink.href = svgUrl;
+                downloadSvgLink.setAttribute('download', 'beautiful_qrcode.svg');
+                
+                // Show result anyway with external API result
+                loader.style.display = 'none';
+                resultContainer.style.display = 'block';
+            }
+        }
+    });
+});
+
+    </script>
 </body>
 </html>
