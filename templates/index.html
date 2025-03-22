@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Beautiful QR Code Generator</h1>
+            <p class="subtitle">Create eye-catching QR codes with custom styles and colors for any purpose</p>
+        </header>
+        
+        <div class="qr-form-container">
+            <div class="api-toggle">
+                <label for="useExternalApi">
+                    <input type="checkbox" id="useExternalApi">
+                    Use public API (if local server is not working)
+                </label>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form id="qrForm">
+                <div class="form-group">
+                    <label for="qrData">Enter your data:</label>
+                    <textarea id="qrData" rows="3" placeholder="Enter URL, text, or other data to encode" required></textarea>
+                </div>
+                
+                <div class="settings">
+                    <div class="form-group">
+                        <label for="qrSize">Size:</label>
+                        <input type="number" id="qrSize" min="100" max="1000" value="300">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="qrColor">Color:</label>
+                        <input type="color" id="qrColor" value="#000000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="qrBgColor">Background:</label>
+                        <input type="color" id="qrBgColor" value="#FFFFFF">
+                    </div>
+                </div>
+                
+                <div class="style-options">
+                    <div class="style-title">Choose a QR Style:</div>
+                    <div class="qr-styles">
+                        <div class="qr-style-option selected" data-style="standard">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?data=standard&size=150x150&color=000000&bgcolor=FFFFFF" alt="Standard QR">
+                            <div class="style-name">Standard</div>
+                        </div>
+                        <div class="qr-style-option" data-style="rounded">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?data=rounded&size=150x150&color=000000&bgcolor=FFFFFF" alt="Rounded QR">
+                            <div class="style-name">Rounded</div>
+                        </div>
+                        <div class="qr-style-option" data-style="dot">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?data=dots&size=150x150&color=000000&bgcolor=FFFFFF" alt="Dots QR">
+                            <div class="style-name">Dots</div>
+                        </div>
+                        <div class="qr-style-option" data-style="custom">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?data=custom&size=150x150&color=6366f1&bgcolor=FFFFFF" alt="Custom QR">
+                            <div class="style-name">Custom</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logoUpload">Add a logo (optional):</label>
+                        <div class="logo-upload">
+                            <div class="logo-preview">
+                                <img id="logoPreview" alt="Logo preview">
+                            </div>
+                            <button type="button" class="logo-upload-btn" id="logoUploadBtn">Upload Logo</button>
+                            <input type="file" id="logoUpload" accept="image/*" style="display: none;">
+                            <button type="button" class="remove-logo" id="removeLogoBtn">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" id="generateBtn">Generate Beautiful QR Code</button>
+            </form>
+        </div>
+        
+        <div class="loader" id="loader"></div>
+        
+        <div class="result-container" id="resultContainer">
+            <h2>Your Beautiful QR Code</h2>
+            <div class="qr-container">
+                <img id="qrCodeImg" class="qr-code" alt="QR Code">
+                
+                <div class="download-btn-container">
+                    <a id="downloadLink" href="#" class="download-btn">
+                        <i class="fas fa-download"></i> Download PNG
+                    </a>
+                    <a id="downloadSvgLink" href="#" class="download-btn">
+                        <i class="fas fa-file-code"></i> Download SVG
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 Beautiful QR Code Generator - Created with ❤️</p>
+        </footer>
+    </div>
+    <script src="./script.js"></script>
+</body>
+</html>
