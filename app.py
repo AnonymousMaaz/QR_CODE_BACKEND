@@ -26,8 +26,13 @@ def generate_qr():
         return jsonify(success=True)
     
     try:
+        # Check if the request comes from form (Content-Type: application/x-www-form-urlencoded)
+        if request.content_type == 'application/x-www-form-urlencoded':
+            data = json.loads(request.form.get('requestData', '{}'))
+        else:
+            # Regular JSON request
+            data = request.json
         # Get data from request
-        data = request.json
         logger.debug(f"Received QR generation request with style: {data.get('style')}")
         
         qr_data = data.get('data', '')
